@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function createAdmin() {
-  const email = 'admin@rcks.com';
+  const email = 'rcksmerchhh@gmail.com';
   const password = 'Admin@123';
   const name = 'Admin';
 
@@ -38,7 +38,7 @@ async function createAdmin() {
     console.log('=============================');
     console.log('  ADMIN LOGIN CREDENTIALS');
     console.log('=============================');
-    console.log('  Email   : admin@rcks.com');
+    console.log('  Email   : rcksmerchhh@gmail.com');
     console.log('  Password: Admin@123');
     console.log('  URL     : http://localhost:3000/login');
     console.log('=============================');
