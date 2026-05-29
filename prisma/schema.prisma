@@ -124,3 +124,11 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  token     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}

@@ -61,7 +61,12 @@ export default function LoginPage() {
             </div>
             
             <div>
-              <label className="block text-white text-sm font-bold uppercase tracking-widest mb-2">Password</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-white text-sm font-bold uppercase tracking-widest">Password</label>
+                <Link href="/forgot-password" className="text-xs text-gray-400 hover:text-primary transition-colors uppercase tracking-widest">
+                  Forgot Password?
+                </Link>
+              </div>
               <input 
                 type="password" 
                 value={password}
@@ -83,9 +88,12 @@ export default function LoginPage() {
             </button>
           </form>
           
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center space-y-2">
             <p className="text-gray-500 text-sm">
               Don't have an account? <Link href="/signup" className="text-white hover:text-primary cursor-pointer underline">Sign up</Link>
+            </p>
+            <p className="text-gray-500 text-sm">
+              <Link href="/forgot-password" className="text-gray-400 hover:text-primary cursor-pointer underline">Forgot password?</Link>
             </p>
           </div>
         </div>
