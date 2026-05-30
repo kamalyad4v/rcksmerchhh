@@ -82,7 +82,9 @@ export async function POST(request: Request) {
         productId: dbProduct.id,
         quantity: item.quantity,
         size: item.size,
-        price: item.price
+        price: item.price,
+        address: address,
+        phone: phone,
       };
     }));
 

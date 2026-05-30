@@ -89,6 +89,8 @@ model OrderItem {
   quantity  Int
   size      String
   price     Float
+  address   String?
+  phone     String?
   
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product  @relation(fields: [productId], references: [id])

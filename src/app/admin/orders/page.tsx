@@ -68,14 +68,18 @@ export default function AdminOrders() {
                     <div className="text-gray-500 text-xs">{order.user?.email}</div>
                   </td>
                   <td className="p-4">
-                    {order.address ? (
-                      <div className="max-w-[200px]">
-                        <div className="text-white text-xs break-words" title={order.address}>{order.address}</div>
-                        <div className="text-gray-500 text-xs mt-1 font-mono">{order.phone || 'No phone'}</div>
-                      </div>
-                    ) : (
-                      <span className="text-gray-600 italic text-xs">No details</span>
-                    )}
+                    {(() => {
+                      const displayAddress = order.address || order.items?.[0]?.address;
+                      const displayPhone = order.phone || order.items?.[0]?.phone;
+                      return displayAddress ? (
+                        <div className="max-w-[200px]">
+                          <div className="text-white text-xs break-words" title={displayAddress}>{displayAddress}</div>
+                          <div className="text-gray-500 text-xs mt-1 font-mono">{displayPhone || 'No phone'}</div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-600 italic text-xs">No details</span>
+                      );
+                    })()}
                   </td>
                   <td className="p-4 text-gray-400">
                     {new Date(order.createdAt).toLocaleDateString()}
