@@ -51,6 +51,7 @@ export default function AdminOrders() {
               <tr className="text-gray-400 text-sm">
                 <th className="p-4 font-medium">Order ID</th>
                 <th className="p-4 font-medium">Customer</th>
+                <th className="p-4 font-medium">Shipping Info</th>
                 <th className="p-4 font-medium">Date</th>
                 <th className="p-4 font-medium">Amount</th>
                 <th className="p-4 font-medium">Status</th>
@@ -65,6 +66,16 @@ export default function AdminOrders() {
                   <td className="p-4">
                     <div className="text-white">{order.user?.name || 'Guest'}</div>
                     <div className="text-gray-500 text-xs">{order.user?.email}</div>
+                  </td>
+                  <td className="p-4">
+                    {order.address ? (
+                      <div className="max-w-[200px]">
+                        <div className="text-white text-xs break-words" title={order.address}>{order.address}</div>
+                        <div className="text-gray-500 text-xs mt-1 font-mono">{order.phone || 'No phone'}</div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-600 italic text-xs">No details</span>
+                    )}
                   </td>
                   <td className="p-4 text-gray-400">
                     {new Date(order.createdAt).toLocaleDateString()}
@@ -90,7 +101,7 @@ export default function AdminOrders() {
                   <td className="p-4">
                     {order.status === 'PROCESSING' && (
                       <button 
-                        onClick={() => updateStatus(order.id, 'SHIPPED')}
+                         onClick={() => updateStatus(order.id, 'SHIPPED')}
                         className="px-3 py-1 bg-[#D0FF00] text-black text-xs font-bold rounded hover:bg-[#b0d600] transition-colors"
                       >
                         Mark Shipped
@@ -109,7 +120,7 @@ export default function AdminOrders() {
               ))}
               {orders.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-gray-500">No orders found.</td>
+                  <td colSpan={8} className="p-8 text-center text-gray-500">No orders found.</td>
                 </tr>
               )}
             </tbody>

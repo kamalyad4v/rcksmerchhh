@@ -94,6 +94,8 @@ export async function POST(request: Request) {
         totalAmount: totalAmount,
         status: 'PENDING',
         paymentId: razorpayOrder.id,
+        address: address,
+        phone: phone,
         items: {
           create: orderItemsData
         }

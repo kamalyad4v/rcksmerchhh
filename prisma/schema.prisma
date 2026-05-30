@@ -75,6 +75,8 @@ model Order {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   paymentId   String?  // Razorpay payment ID
+  address     String?
+  phone       String?
   
   user        User     @relation(fields: [userId], references: [id])
   items       OrderItem[]
