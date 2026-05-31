@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { items, address, phone } = body;
+    const { items, address, phone, couponCode } = body;
     
     if (!items || items.length === 0) {
       return NextResponse.json(
@@ -25,7 +25,49 @@ export async function POST(request: Request) {
 
     // Calculate total amount in INR (Razorpay expects paise, so multiply by 100)
     const totalAmount = items.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0);
-    const amountInPaise = totalAmount * 100;
+
+    let discount = 0;
+    if (couponCode && typeof couponCode === 'string') {
+      const codeUpper = couponCode.trim().toUpperCase();
+
+      // Auto-create/seed the SAVE498 coupon in database if it doesn't exist
+      if (codeUpper === 'SAVE498') {
+        try {
+          const existing = await prisma.coupon.findUnique({
+            where: { code: codeUpper },
+          });
+
+          if (!existing) {
+            await prisma.coupon.create({
+              data: {
+                code: codeUpper,
+                discount: 498.0,
+                expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10), // 10 years expiry
+                isActive: true,
+              },
+            });
+          }
+        } catch (dbErr) {
+          console.error('Error auto-seeding coupon in checkout:', dbErr);
+        }
+      }
+
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: codeUpper },
+      });
+
+      if (coupon && coupon.isActive && new Date(coupon.expiresAt) >= new Date()) {
+        discount = coupon.discount;
+      } else {
+        return NextResponse.json(
+          { success: false, error: 'Invalid or expired coupon code' },
+          { status: 400 }
+        );
+      }
+    }
+
+    const finalAmount = Math.max(1, totalAmount - discount);
+    const amountInPaise = finalAmount * 100;
 
     if (amountInPaise < 100) {
        return NextResponse.json(
@@ -93,7 +135,7 @@ export async function POST(request: Request) {
       data: {
         id: razorpayOrder.id,
         userId: user.id,
-        totalAmount: totalAmount,
+        totalAmount: finalAmount,
         status: 'PENDING',
         paymentId: razorpayOrder.id,
         address: address,

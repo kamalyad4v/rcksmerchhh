@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cartStore";
-import { ArrowLeft, CreditCard, Banknote, Trash2 } from "lucide-react";
+import { ArrowLeft, CreditCard, Banknote, Trash2, Tag } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
 
@@ -17,6 +17,45 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("online"); // online or cod
   const [loading, setLoading] = useState(false);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  const handleApplyCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!couponCode.trim()) return;
+
+    setCouponLoading(true);
+    setCouponError("");
+
+    try {
+      const res = await fetch("/api/coupon/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponCode }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setAppliedCoupon(data.coupon);
+        setCouponCode("");
+      } else {
+        setCouponError(data.error || "Invalid coupon code");
+      }
+    } catch (err) {
+      console.error(err);
+      setCouponError("Failed to apply coupon");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError("");
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -49,7 +88,13 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, address, phone, paymentMethod }),
+        body: JSON.stringify({ 
+          items, 
+          address, 
+          phone, 
+          paymentMethod,
+          couponCode: appliedCoupon?.code
+        }),
       });
       const data = await res.json();
 
@@ -213,19 +258,68 @@ export default function CheckoutPage() {
             </div>
           ))}
         </div>
+
+        {/* Coupon Code Section */}
+        <div className="mt-8 pt-8 border-t border-white/10">
+          {!appliedCoupon ? (
+            <form onSubmit={handleApplyCoupon} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="ENTER COUPON CODE"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                className="flex-1 bg-white/5 border border-white/20 px-4 py-3 text-white uppercase text-sm tracking-widest focus:outline-none focus:border-primary transition-colors placeholder:text-gray-600"
+                disabled={couponLoading}
+              />
+              <button
+                type="submit"
+                disabled={couponLoading || !couponCode.trim()}
+                className="px-6 py-3 bg-primary text-black font-bold uppercase text-xs tracking-widest hover:bg-white transition-colors disabled:opacity-50"
+              >
+                {couponLoading ? "Applying..." : "Apply"}
+              </button>
+            </form>
+          ) : (
+            <div className="flex justify-between items-center bg-primary/5 border border-primary/20 p-4">
+              <div className="flex items-center gap-2">
+                <Tag size={16} className="text-primary" />
+                <div>
+                  <span className="font-bold text-sm tracking-widest uppercase text-white">{appliedCoupon.code}</span>
+                  <span className="block text-[10px] text-primary uppercase font-medium">Coupon Applied Successfully</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveCoupon}
+                className="text-gray-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          {couponError && (
+            <p className="text-red-500 text-xs mt-2 uppercase tracking-wider font-semibold">{couponError}</p>
+          )}
+        </div>
         
         <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
           <div className="flex justify-between text-gray-400 text-sm uppercase">
             <span>Subtotal</span>
             <span>₹{getTotalPrice()}</span>
           </div>
+          {appliedCoupon && (
+            <div className="flex justify-between text-primary text-sm uppercase font-semibold">
+              <span>Discount ({appliedCoupon.code})</span>
+              <span>-₹{appliedCoupon.discount}</span>
+            </div>
+          )}
           <div className="flex justify-between text-gray-400 text-sm uppercase">
             <span>Shipping</span>
             <span>Free</span>
           </div>
-          <div className="flex justify-between text-white text-xl font-black uppercase mt-4">
+          <div className="flex justify-between text-white text-xl font-black uppercase mt-4 border-t border-white/5 pt-4">
             <span>Total</span>
-            <span className="text-primary">₹{getTotalPrice()}</span>
+            <span className="text-primary">₹{Math.max(1, getTotalPrice() - (appliedCoupon ? appliedCoupon.discount : 0))}</span>
           </div>
         </div>
       </div>

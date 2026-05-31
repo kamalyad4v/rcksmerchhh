@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 export default function AdminOrders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ALL');
 
   const fetchOrders = () => {
     setLoading(true);
@@ -36,6 +37,12 @@ export default function AdminOrders() {
     }
   };
 
+  const filteredOrders = orders.filter((order) => {
+    if (activeTab === 'ALL') return true;
+    if (activeTab === 'PENDING') return order.status === 'PENDING' || order.status === 'PROCESSING';
+    return order.status === activeTab;
+  });
+
   if (loading && orders.length === 0) {
     return <div className="p-8 text-[#D0FF00]">Loading orders...</div>;
   }
@@ -43,6 +50,34 @@ export default function AdminOrders() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-8 uppercase tracking-wider text-white">Order Management</h1>
+
+      {/* Tabs for dividing categories */}
+      <div className="flex flex-wrap gap-2 md:gap-4 mb-6 border-b border-[#333]">
+        {['ALL', 'PENDING', 'SHIPPED', 'DELIVERED'].map((tab) => {
+          const count = orders.filter((o) => {
+            if (tab === 'ALL') return true;
+            if (tab === 'PENDING') return o.status === 'PENDING' || o.status === 'PROCESSING';
+            return o.status === tab;
+          }).length;
+
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-xs md:text-sm font-bold uppercase tracking-wider transition-colors relative pb-3 -mb-[1px] ${
+                activeTab === tab
+                  ? 'text-[#D0FF00]'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {tab} ({count})
+              {activeTab === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D0FF00]" />
+              )}
+            </button>
+          );
+        })}
+      </div>
       
       <div className="bg-[#111] border border-[#333] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
@@ -60,7 +95,7 @@ export default function AdminOrders() {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <tr key={order.id} className="border-t border-[#333] hover:bg-[#151515] transition-colors">
                   <td className="p-4 font-mono text-xs text-gray-500">{order.id}</td>
                   <td className="p-4">
@@ -103,9 +138,25 @@ export default function AdminOrders() {
                     </div>
                   </td>
                   <td className="p-4">
+                    {order.status === 'PENDING' && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => updateStatus(order.id, 'PROCESSING')}
+                          className="px-2 py-1 bg-yellow-600 hover:bg-yellow-500 text-black text-[10px] font-bold rounded transition-colors uppercase tracking-wider"
+                        >
+                          Process
+                        </button>
+                        <button 
+                          onClick={() => updateStatus(order.id, 'SHIPPED')}
+                          className="px-2 py-1 bg-[#D0FF00] hover:bg-[#b0d600] text-black text-[10px] font-bold rounded transition-colors uppercase tracking-wider"
+                        >
+                          Ship
+                        </button>
+                      </div>
+                    )}
                     {order.status === 'PROCESSING' && (
                       <button 
-                         onClick={() => updateStatus(order.id, 'SHIPPED')}
+                        onClick={() => updateStatus(order.id, 'SHIPPED')}
                         className="px-3 py-1 bg-[#D0FF00] text-black text-xs font-bold rounded hover:bg-[#b0d600] transition-colors"
                       >
                         Mark Shipped
@@ -122,9 +173,9 @@ export default function AdminOrders() {
                   </td>
                 </tr>
               ))}
-              {orders.length === 0 && (
+              {filteredOrders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-gray-500">No orders found.</td>
+                  <td colSpan={8} className="p-8 text-center text-gray-500">No orders found in {activeTab.toLowerCase()} category.</td>
                 </tr>
               )}
             </tbody>
