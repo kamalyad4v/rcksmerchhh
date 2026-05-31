@@ -131,15 +131,15 @@ export default function ProductClient({ product }: { product: any }) {
             ) : (
               <button 
                 onClick={handleAddToCart}
-                disabled={product.stock <= 0 && productId !== 'aguu-signature-tee'}
+                disabled={product.stock <= 0}
                 className="w-full py-5 bg-primary text-black font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-white transition-colors disabled:opacity-50"
               >
-                <ShoppingBag size={20} /> {product.stock <= 0 && productId !== 'aguu-signature-tee' ? 'Sold Out' : 'pakkana pettu'}
+                <ShoppingBag size={20} /> {product.stock <= 0 ? 'Sold Out' : 'pakkana pettu'}
               </button>
             )}
             <button 
               onClick={handleBuyNow}
-              disabled={product.stock <= 0 && productId !== 'aguu-signature-tee'}
+              disabled={product.stock <= 0}
               className="w-full py-5 border border-white/20 text-white font-bold uppercase tracking-widest hover:bg-white/5 transition-colors disabled:opacity-50"
             >
               venteneyy kanuu

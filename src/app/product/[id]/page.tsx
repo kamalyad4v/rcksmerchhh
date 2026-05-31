@@ -8,9 +8,13 @@ const prisma = new PrismaClient();
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  let product;
+  const lookupId = id === 'signature' ? 'aguu-signature-tee' : id;
   
-  if (id === 'signature') {
+  let product: any = await prisma.product.findUnique({
+    where: { id: lookupId }
+  });
+
+  if (!product && id === 'signature') {
     // Fallback for the hardcoded signature link on homepage
     product = {
       id: 'aguu-signature-tee',
@@ -18,12 +22,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       price: 499,
       description: 'The pinnacle of our collection. Crafted from 180 GSM French Terry cotton, featuring an oversized drop-shoulder fit. The fabric has been specially treated for a vintage grunge texture that ages beautifully.',
       sizes: ['S', 'M', 'L', 'XL'],
-      images: []
+      images: [],
+      stock: 100
     };
-  } else {
-    product = await prisma.product.findUnique({
-      where: { id }
-    });
   }
 
   if (!product) {

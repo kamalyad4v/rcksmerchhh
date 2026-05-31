@@ -158,7 +158,7 @@ export default function AdminProducts() {
               
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#333]">
                 <div className="text-xs text-gray-500 space-y-1">
-                  <div>Stock: <span className="text-white">{product.stock}</span></div>
+                  <div>Stock: <span className={product.stock <= 0 ? "text-red-500 font-bold" : "text-white"}>{product.stock} {product.stock <= 0 && "(OUT OF STOCK)"}</span></div>
                   <div>Sizes: {product.sizes.join(', ')}</div>
                 </div>
                 <div className="flex space-x-2">
@@ -195,9 +195,28 @@ export default function AdminProducts() {
                   <label className="block text-xs text-gray-500 mb-1">Price (₹)</label>
                   <input required type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-white" />
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Stock</label>
-                  <input required type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-white" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Stock</label>
+                    <input required type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#333] rounded p-2 text-white" />
+                  </div>
+                  <div className="flex items-center pl-2 pt-5">
+                    <label className="flex items-center space-x-2 text-xs text-gray-400 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={parseInt(formData.stock) === 0 || formData.stock === ''}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setFormData({...formData, stock: '0'});
+                          } else {
+                            setFormData({...formData, stock: '100'});
+                          }
+                        }}
+                        className="accent-[#D0FF00] rounded"
+                      />
+                      <span>Out of Stock</span>
+                    </label>
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs text-gray-500 mb-1">Sizes (comma separated)</label>
